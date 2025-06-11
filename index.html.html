@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İngilizce Kelime Ezberleme</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button.delete-btn {
+            background-color: #f44336;
+            width: auto;
+            margin-left: 10px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        #meaning-container {
+            display: none;
+        }
+        #word-list {
+            margin-top: 20px;
+        }
+        .word-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .word-text {
+            flex: 1;
+        }
+        .word-text strong {
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h1>İngilizce Kelime Ezberleme</h1>
+    
+    <div class="input-group">
+        <input type="text" id="word-input" placeholder="Kelime Gir (Örnek: Apple)">
+        <button id="submit-word">Gönder</button>
+    </div>
+    
+    <div id="meaning-container">
+        <textarea id="meaning-input" placeholder="Anlamını Yaz (Örnek: Elma)"></textarea>
+        <button id="save-word">Kaydet</button>
+    </div>
+    
+    <div id="word-list">
+        <h2>Ezberlediğiniz Kelimeler</h2>
+        <!-- Kelimeler burada görünecek -->
+    </div>
+
+    <script>
+        const wordInput = document.getElementById("word-input");
+        const submitWordBtn = document.getElementById("submit-word");
+        const meaningContainer = document.getElementById("meaning-container");
+        const meaningInput = document.getElementById("meaning-input");
+        const saveWordBtn = document.getElementById("save-word");
+        const wordList = document.getElementById("word-list");
+
+        // Sayfa yüklendiğinde kayıtlı kelimeleri göster
+        document.addEventListener("DOMContentLoaded", loadWords);
+
+        // Kelime gönder butonuna tıklandığında
+        submitWordBtn.addEventListener("click", function() {
+            const word = wordInput.value.trim();
+            
+            if (word === "") {
+                alert("Lütfen bir kelime girin!");
+                return;
+            }
+            
+            meaningContainer.style.display = "block";
+        });
+
+        // Kaydet butonuna tıklandığında
+        saveWordBtn.addEventListener("click", function() {
+            const word = wordInput.value.trim();
+            const meaning = meaningInput.value.trim();
+            
+            if (word === "" || meaning === "") {
+                alert("Lütfen kelime ve anlamını girin!");
+                return;
+            }
+            
+            saveWord(word, meaning);
+            displayWord(word, meaning);
+            
+            // Inputları temizle
+            wordInput.value = "";
+            meaningInput.value = "";
+            meaningContainer.style.display = "none";
+        });
+
+        // Kelimeyi localStorage'a kaydet
+        function saveWord(word, meaning) {
+            let words = JSON.parse(localStorage.getItem("words")) || [];
+            words.push({ word, meaning });
+            localStorage.setItem("words", JSON.stringify(words));
+        }
+
+        // Kayıtlı kelimeleri yükle
+        function loadWords() {
+            let words = JSON.parse(localStorage.getItem("words")) || [];
+            words.forEach(item => {
+                displayWord(item.word, item.meaning);
+            });
+        }
+
+        // Kelimeyi ekranda göster
+        function displayWord(word, meaning) {
+            const wordItem = document.createElement("div");
+            wordItem.className = "word-item";
+            
+            const wordText = document.createElement("div");
+            wordText.className = "word-text";
+            wordText.innerHTML = `<strong>${word}</strong>: ${meaning}`;
+            
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "delete-btn";
+            deleteBtn.textContent = "Sil";
+            deleteBtn.onclick = function() {
+                deleteWord(word, wordItem);
+            };
+            
+            wordItem.appendChild(wordText);
+            wordItem.appendChild(deleteBtn);
+            wordList.appendChild(wordItem);
+        }
+
+        // Kelimeyi sil
+        function deleteWord(wordToDelete, element) {
+            let words = JSON.parse(localStorage.getItem("words")) || [];
+            words = words.filter(item => item.word !== wordToDelete);
+            localStorage.setItem("words", JSON.stringify(words));
+            element.remove();
+        }
+    </script>
+</body>
+</html>
