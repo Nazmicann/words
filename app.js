@@ -11,7 +11,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-// DOM elemanları
 const usernameInput = document.getElementById("username-input");
 const loginBtn = document.getElementById("login-btn");
 const wordInput = document.getElementById("word-input");
@@ -28,15 +27,12 @@ const searchSection = document.getElementById("search-section");
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const searchResult = document.getElementById("search-result");
-const randomBtn = document.getElementById("random-word-btn");
-const statsBtn = document.getElementById("stats-btn");
 const modal = document.getElementById("modal");
 const modalBody = document.getElementById("modal-body");
 const modalClose = document.getElementById("modal-close");
 
 let currentUser = null;
 
-// Giriş kontrolü
 document.addEventListener("DOMContentLoaded", () => {
   const saved = localStorage.getItem("currentUser");
   if (saved) {
@@ -48,7 +44,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// Giriş yap
 loginBtn.onclick = () => {
   const username = usernameInput.value.trim();
   if (!username) return showModal("Lütfen kullanıcı adı girin.");
@@ -62,7 +57,6 @@ loginBtn.onclick = () => {
   loadUsers();
 };
 
-// Kelime gönder
 submitBtn.onclick = () => {
   const word = wordInput.value.trim();
   if (!word) return showModal("Kelime girin.");
@@ -76,7 +70,6 @@ submitBtn.onclick = () => {
   });
 };
 
-// Kaydet
 saveBtn.onclick = () => {
   const word = wordInput.value.trim();
   const meaning = meaningInput.value.trim();
@@ -92,14 +85,12 @@ saveBtn.onclick = () => {
   loadWords();
 };
 
-// Kullanıcı filtresi değiştiğinde
 userFilter.onchange = () => {
   loadWords();
   if (userFilter.value === "me") searchSection.classList.remove("hidden");
   else searchSection.classList.add("hidden");
 };
 
-// Arama
 searchBtn.onclick = () => {
   const term = searchInput.value.trim().toLowerCase();
   if (!term) return;
@@ -118,7 +109,6 @@ searchBtn.onclick = () => {
   });
 };
 
-// Kullanıcıları yükle
 function loadUsers() {
   database.ref("users").once("value").then(snapshot => {
     const users = snapshot.val() || {};
@@ -127,7 +117,6 @@ function loadUsers() {
   });
 }
 
-// Kullanıcı filtre güncelleme
 function updateUserFilter(users) {
   userFilter.innerHTML = '<option value="all">Tüm Kullanıcılar</option><option value="me">Sadece Benim Kelimelerim</option>';
   users.forEach(user => {
@@ -139,7 +128,6 @@ function updateUserFilter(users) {
   loadWords();
 }
 
-// Kelimeleri yükle
 function loadWords() {
   loading.style.display = "block";
   wordList.innerHTML = '<h2>Kelime Listesi</h2>';
@@ -159,7 +147,6 @@ function loadWords() {
   });
 }
 
-// Listele
 function displayWords(words) {
   wordList.innerHTML = '<h2>Kelime Listesi</h2>';
   if (!words.length) {
@@ -182,23 +169,8 @@ function displayWords(words) {
     item.appendChild(text);
     wordList.appendChild(item);
   });
-
-  // Rastgele ve istatistik
-  if (randomBtn && statsBtn) {
-    randomBtn.onclick = () => {
-      if (!words.length) return showModal("Hiç kelime yok!");
-      const rand = words[Math.floor(Math.random() * words.length)];
-      showModal(`<strong>${rand.word}</strong><br>${rand.meaning}`);
-    };
-    statsBtn.onclick = () => {
-      const count = words.length;
-      const unique = new Set(words.map(w => w.word.toLowerCase())).size;
-      showModal(`<strong>Toplam kelime:</strong> ${count}<br><strong>Benzersiz kelime:</strong> ${unique}`);
-    };
-  }
 }
 
-// Silme
 function deleteWord(id) {
   if (confirm("Bu kelime silinsin mi?")) {
     database.ref("words/" + id).remove();
@@ -206,7 +178,6 @@ function deleteWord(id) {
   }
 }
 
-// Modal gösterme
 function showModal(content) {
   if (!modal || !modalBody || !modalClose) return alert(content);
   modalBody.innerHTML = content;
