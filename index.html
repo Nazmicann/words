@@ -1,123 +1,11 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>İngilizce Kelime Ezberleme</title>
+  <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #f5f5f5;
-    }
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-    .container {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    .input-group {
-      margin-bottom: 15px;
-    }
-    input, textarea, button, select {
-      width: 100%;
-      padding: 10px;
-      margin: 5px 0;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    button.delete-btn {
-      background-color: #f44336;
-      width: 36px;
-      height: 36px;
-      padding: 0;
-      font-size: 16px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #user-section, #word-input-section, #meaning-container {
-      margin-bottom: 20px;
-    }
-    #word-list {
-      margin-top: 20px;
-    }
-    .word-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f9f9f9;
-      padding: 10px 15px;
-      margin-bottom: 8px;
-      border-radius: 5px;
-      border-left: 4px solid #4CAF50;
-    }
-    .word-text {
-      flex: 1;
-    }
-    .word-text strong {
-      color: #4CAF50;
-    }
-    .user-badge {
-      display: inline-block;
-      background: #2196F3;
-      color: white;
-      padding: 3px 8px;
-      border-radius: 15px;
-      font-size: 12px;
-      margin-left: 5px;
-    }
-    .word-text .delete-btn {
-              margin-left: 8px;
-          }
-
-    .hidden {
-      display: none;
-    }
-    .loading {
-      text-align: center;
-      color: #666;
-      font-style: italic;
-    }
-    #search-section {
-      margin-top: 10px;
-    }
-    @media (max-width: 600px) {
-      body {
-        padding: 10px;
-      }
-      .word-item {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      input, textarea, button, select {
-        font-size: 14px;
-      }
-      button.delete-btn {
-        width: 36px;
-        height: 36px;
-      }
-    }
-  </style>
 </head>
 <body>
   <div class="container">
@@ -128,6 +16,7 @@
         <button id="login-btn">Giriş Yap / Kayıt Ol</button>
       </div>
     </div>
+
     <div id="word-input-section" class="hidden">
       <div class="input-group">
         <input type="text" id="word-input" placeholder="Kelime Gir">
@@ -140,184 +29,35 @@
       <div class="input-group">
         <select id="user-filter"></select>
       </div>
+
       <div id="search-section" class="hidden">
         <input type="text" id="search-input" placeholder="Kelime Ara">
         <button id="search-btn">Ara</button>
         <div id="search-result"></div>
       </div>
+
+      <div class="input-group">
+        <button id="random-word-btn">🎲 Rastgele Kelime</button>
+        <button id="stats-btn">📊 İstatistik</button>
+      </div>
     </div>
+
     <div id="word-list">
       <h2>Kelime Listesi</h2>
       <div id="loading" class="loading">Yükleniyor...</div>
     </div>
   </div>
+
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  <script>
-     const firebaseConfig = {
-         apiKey: "AIzaSyAlQR7p6gwbYlRmIVTVXDjvhi79Ms_vcvM",
-         authDomain: "words-2a5f2.firebaseapp.com",
-         databaseURL: "https://words-2a5f2-default-rtdb.firebaseio.com",
-         projectId: "words-2a5f2",
-         storageBucket: "words-2a5f2.firebasestorage.app",
-         messagingSenderId: "469414272332",
-         appId: "1:469414272332:web:4441813c6188a41a20c3e9"
-     };
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    const userSection = document.getElementById("user-section");
-    const wordInputSection = document.getElementById("word-input-section");
-    const usernameInput = document.getElementById("username-input");
-    const loginBtn = document.getElementById("login-btn");
-    const wordInput = document.getElementById("word-input");
-    const submitWordBtn = document.getElementById("submit-word");
-    const meaningContainer = document.getElementById("meaning-container");
-    const meaningInput = document.getElementById("meaning-input");
-    const saveWordBtn = document.getElementById("save-word");
-    const wordList = document.getElementById("word-list");
-    const userFilter = document.getElementById("user-filter");
-    const loadingElement = document.getElementById("loading");
-    const searchSection = document.getElementById("search-section");
-    const searchInput = document.getElementById("search-input");
-    const searchBtn = document.getElementById("search-btn");
-    const searchResult = document.getElementById("search-result");
-    let currentUser = null;
+  <script src="app.js"></script>
+  
+  <div id="modal" class="modal hidden">
+  <div class="modal-content">
+    <span id="modal-close">&times;</span>
+    <div id="modal-body"></div>
+  </div>
+</div>
 
-    document.addEventListener("DOMContentLoaded", () => checkSavedUser());
-
-    loginBtn.onclick = () => {
-      const username = usernameInput.value.trim();
-      if (!username) return alert("Lütfen kullanıcı adı girin");
-      const cleanUsername = username.replace(/[.#$\[\]]/g, "");
-      if (cleanUsername !== username) return alert("Geçersiz karakter");
-      currentUser = cleanUsername;
-      localStorage.setItem("currentUser", currentUser);
-      userSection.classList.add("hidden");
-      wordInputSection.classList.remove("hidden");
-      loadUsers();
-    };
-
-    submitWordBtn.onclick = () => {
-      const word = wordInput.value.trim();
-      if (!word) return alert("Kelime girin");
-      database.ref("words").orderByChild("word").equalTo(word).once("value", snapshot => {
-        let exists = false;
-        snapshot.forEach(child => { if (child.val().user === currentUser) exists = true; });
-        if (exists) alert("Bu kelimeyi zaten eklediniz!");
-        else meaningContainer.classList.remove("hidden");
-      });
-    };
-
-    saveWordBtn.onclick = () => {
-      const word = wordInput.value.trim();
-      const meaning = meaningInput.value.trim();
-      if (!word || !meaning) return alert("Kelime ve anlam girin");
-      const newWord = { word, meaning, user: currentUser, timestamp: firebase.database.ServerValue.TIMESTAMP };
-      database.ref("words").push(newWord);
-      wordInput.value = "";
-      meaningInput.value = "";
-      meaningContainer.classList.add("hidden");
-    };
-
-    userFilter.onchange = () => {
-      loadWords();
-      if (userFilter.value === "me") searchSection.classList.remove("hidden");
-      else searchSection.classList.add("hidden");
-    };
-
-    searchBtn.onclick = () => {
-      const term = searchInput.value.trim().toLowerCase();
-      if (!term) return;
-      database.ref("words").orderByChild("user").equalTo(currentUser).once("value", snapshot => {
-        let found = false;
-        snapshot.forEach(child => {
-          if (child.val().word.toLowerCase() === term) found = true;
-        });
-        if (found) searchResult.textContent = `"${term}" zaten eklenmiş.`;
-        else {
-          searchResult.innerHTML = `"${term}" bulunamadı. Anlamını girin:`;
-          wordInput.value = term;
-          meaningContainer.classList.remove("hidden");
-        }
-      });
-    };
-
-          function checkSavedUser() {
-                  const saved = localStorage.getItem("currentUser");
-                    if (saved) {
-                          currentUser = saved;
-                            userSection.classList.add("hidden");
-                            wordInputSection.classList.remove("hidden");
-                              userFilter.value = "me"; // Kullanıcı ilk kendi kelimelerini görsün
-                                      loadUsers();
-                        }
-                }
-
-    function loadUsers() {
-      database.ref("users").once("value").then(snapshot => {
-        const users = snapshot.val() || {};
-        if (!users[currentUser]) database.ref("users/" + currentUser).set(true);
-        updateUserFilter(Object.keys(users));
-      });
-    }
-
-    function updateUserFilter(users) {
-      userFilter.innerHTML = '<option value="all">Tüm Kullanıcılar</option><option value="me">Sadece Benim Kelimelerim</option>';
-      users.forEach(user => {
-        const opt = document.createElement("option");
-        opt.value = user;
-        opt.textContent = user;
-        userFilter.appendChild(opt);
-      });
-      loadWords();
-    }
-
-    function loadWords() {
-      loadingElement.style.display = "block";
-      wordList.innerHTML = '<h2>Kelime Listesi</h2>';
-      database.ref("words").orderByChild("timestamp").once("value", snapshot => {
-        const words = [];
-        snapshot.forEach(child => {
-          const word = child.val();
-          word.id = child.key;
-          words.push(word);
-        });
-        const selected = userFilter.value;
-        const filtered = selected === "all" ? words :
-                         selected === "me" ? words.filter(w => w.user === currentUser) :
-                         words.filter(w => w.user === selected);
-        filtered.sort((a, b) => a.word.localeCompare(b.word));
-        displayWords(filtered);
-      });
-    }
-
-    function displayWords(words) {
-      wordList.innerHTML = '<h2>Kelime Listesi</h2>';
-      if (!words.length) return wordList.innerHTML += '<p>Henüz kelime yok.</p>';
-      words.forEach(word => {
-        const item = document.createElement("div");
-        item.className = "word-item";
-        const text = document.createElement("div");
-        text.className = "word-text";
-        text.innerHTML = `<strong>${word.word}</strong>: ${word.meaning} <span class="user-badge">${word.user}</span>`;
-            if (word.user === currentUser) {
-                   const btn = document.createElement("button");
-                    btn.className = "delete-btn";
-                    btn.innerHTML = '<i class="fas fa-trash"></i>';
-                    btn.onclick = () => deleteWord(word.id);
-                     text.appendChild(btn); // Sil butonunu user-badge yanına ekliyoruz
-                  }
-item.appendChild(text);
-        wordList.appendChild(item);
-      });
-    }
-
-    function deleteWord(id) {
-      if (confirm("Bu kelime silinsin mi?")) {
-        database.ref("words/" + id).remove();
-        loadWords();
-      }
-    }
-  </script>
 </body>
 </html>
