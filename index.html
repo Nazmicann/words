@@ -87,6 +87,24 @@
             color: #666;
             font-style: italic;
         }
+    
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .word-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .word-item button {
+                margin-top: 10px;
+                width: 100%;
+            }
+            input, textarea, button, select {
+                font-size: 14px;
+            }
+        }
+
     </style>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -119,6 +137,7 @@
             <div class="input-group">
                 <select id="user-filter">
                     <option value="all">Tüm Kullanıcılar</option>
+<option value="me">Sadece Benim Kelimelerim</option>
                 </select>
             </div>
         </div>
@@ -134,13 +153,7 @@
     <script>
         // Firebase konfigürasyonu (KENDİ BİLGİLERİNİZİ EKLEYİN)
         const firebaseConfig = {
-            apiKey: "AIzaSyAlQR7p6gwbYlRmIVTVXDjvhi79Ms_vcvM",
-            authDomain: "words-2a5f2.firebaseapp.com",
-            databaseURL: "https://words-2a5f2-default-rtdb.firebaseio.com",
-            projectId: "words-2a5f2",
-            storageBucket: "words-2a5f2.firebasestorage.app",
-            messagingSenderId: "469414272332",
-            appId: "1:469414272332:web:4441813c6188a41a20c3e9"
+
         };
 
         // Firebase'i başlat
@@ -198,15 +211,26 @@
         });
 
         // Kelime gönder butonu
-        submitWordBtn.addEventListener("click", function() {
+        submitWordBtn.addEventListener("click", function () {
             const word = wordInput.value.trim();
-            
             if (word === "") {
                 alert("Lütfen bir kelime girin!");
                 return;
             }
-            
-            meaningContainer.classList.remove("hidden");
+            const wordsRef = database.ref("words");
+            wordsRef.orderByChild("word").equalTo(word).once("value", snapshot => {
+                let duplicate = false;
+                snapshot.forEach(child => {
+                    if (child.val().user === currentUser) {
+                        duplicate = true;
+                    }
+                });
+                if (duplicate) {
+                    alert("Bu kelimeyi zaten eklediniz!");
+                } else {
+                    meaningContainer.classList.remove("hidden");
+                }
+            });
         });
 
         // Kelime kaydet butonu
@@ -267,7 +291,8 @@
 
         // Kullanıcı filtreleme seçeneklerini güncelle
         function updateUserFilter(users) {
-            userFilter.innerHTML = '<option value="all">Tüm Kullanıcılar</option>';
+            userFilter.innerHTML = '<option value="all">Tüm Kullanıcılar</option>
+<option value="me">Sadece Benim Kelimelerim</option>';
             
             users.forEach(user => {
                 const option = document.createElement("option");
@@ -324,9 +349,12 @@
             
             // Filtrele (eğer Firebase'de filtreleme yapılmadıysa)
             const selectedUser = userFilter.value;
-            const filteredWords = selectedUser === "all" ? 
-                words : 
-                words.filter(word => word.user === selectedUser);
+            const filteredWords = selectedUser === "all"
+                ? words
+                : selectedUser === "me"
+                    ? words.filter(word => word.user === currentUser)
+                    : words.filter(word => word.user === selectedUser);
+            filteredWords.sort((a, b) => a.word.localeCompare(b.word));
             
             filteredWords.forEach(word => {
                 const wordItem = document.createElement("div");
