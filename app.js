@@ -179,8 +179,5 @@ function deleteWord(id) {
 }
 
 function showModal(content) {
-  if (!modal || !modalBody || !modalClose) return alert(content);
-  modalBody.innerHTML = content;
-  modal.classList.remove("hidden");
-  modalClose.onclick = () => modal.classList.add("hidden");
+  alert(content);
 }
