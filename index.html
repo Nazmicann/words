@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>İngilizce Kelime Ezberleme</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -43,25 +44,17 @@
     button:hover {
       background-color: #45a049;
     }
-button.delete-btn {
-  background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 6px 10px;
-  font-size: 14px;
-  border-radius: 5px;
-  cursor: pointer;
-  width: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-button.delete-btn i {
-  margin: 0;
-}
-
-
+    button.delete-btn {
+      background-color: #f44336;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      font-size: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
     #user-section, #word-input-section, #meaning-container {
       margin-bottom: 20px;
     }
@@ -101,6 +94,9 @@ button.delete-btn i {
       color: #666;
       font-style: italic;
     }
+    #search-section {
+      margin-top: 10px;
+    }
     @media (max-width: 600px) {
       body {
         padding: 10px;
@@ -109,65 +105,62 @@ button.delete-btn i {
         flex-direction: column;
         align-items: flex-start;
       }
-      .word-item button {
-        margin-top: 10px;
-        width: 100%;
-      }
       input, textarea, button, select {
         font-size: 14px;
       }
+      button.delete-btn {
+        width: 36px;
+        height: 36px;
+      }
     }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 </head>
 <body>
   <div class="container">
     <h1>İngilizce Kelime Ezberleme</h1>
-
     <div id="user-section">
       <div class="input-group">
         <input type="text" id="username-input" placeholder="Kullanıcı Adı">
         <button id="login-btn">Giriş Yap / Kayıt Ol</button>
       </div>
     </div>
-
     <div id="word-input-section" class="hidden">
       <div class="input-group">
         <input type="text" id="word-input" placeholder="Kelime Gir">
         <button id="submit-word">Gönder</button>
       </div>
-
       <div id="meaning-container" class="hidden">
         <textarea id="meaning-input" placeholder="Anlamını Yaz"></textarea>
         <button id="save-word">Kaydet</button>
       </div>
-
       <div class="input-group">
         <select id="user-filter"></select>
       </div>
+      <div id="search-section" class="hidden">
+        <input type="text" id="search-input" placeholder="Kelime Ara">
+        <button id="search-btn">Ara</button>
+        <div id="search-result"></div>
+      </div>
     </div>
-
     <div id="word-list">
       <h2>Kelime Listesi</h2>
       <div id="loading" class="loading">Yükleniyor...</div>
     </div>
   </div>
-
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script>
      const firebaseConfig = {
          apiKey: "AIzaSyAlQR7p6gwbYlRmIVTVXDjvhi79Ms_vcvM",
          authDomain: "words-2a5f2.firebaseapp.com",
-        databaseURL: "https://words-2a5f2-default-rtdb.firebaseio.com",
+         databaseURL: "https://words-2a5f2-default-rtdb.firebaseio.com",
          projectId: "words-2a5f2",
          storageBucket: "words-2a5f2.firebasestorage.app",
          messagingSenderId: "469414272332",
          appId: "1:469414272332:web:4441813c6188a41a20c3e9"
      };
-
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
-
     const userSection = document.getElementById("user-section");
     const wordInputSection = document.getElementById("word-input-section");
     const usernameInput = document.getElementById("username-input");
@@ -180,80 +173,75 @@ button.delete-btn i {
     const wordList = document.getElementById("word-list");
     const userFilter = document.getElementById("user-filter");
     const loadingElement = document.getElementById("loading");
-
+    const searchSection = document.getElementById("search-section");
+    const searchInput = document.getElementById("search-input");
+    const searchBtn = document.getElementById("search-btn");
+    const searchResult = document.getElementById("search-result");
     let currentUser = null;
 
-    document.addEventListener("DOMContentLoaded", function () {
-      checkSavedUser();
-    });
+    document.addEventListener("DOMContentLoaded", () => checkSavedUser());
 
-    loginBtn.addEventListener("click", function () {
+    loginBtn.onclick = () => {
       const username = usernameInput.value.trim();
-      if (username === "") {
-        alert("Lütfen bir kullanıcı adı girin!");
-        return;
-      }
+      if (!username) return alert("Lütfen kullanıcı adı girin");
       const cleanUsername = username.replace(/[.#$\[\]]/g, "");
-      if (cleanUsername !== username) {
-        alert("Kullanıcı adında özel karakter kullanamazsınız!");
-        return;
-      }
+      if (cleanUsername !== username) return alert("Geçersiz karakter");
       currentUser = cleanUsername;
       localStorage.setItem("currentUser", currentUser);
       userSection.classList.add("hidden");
       wordInputSection.classList.remove("hidden");
       loadUsers();
-    });
+    };
 
-    submitWordBtn.addEventListener("click", function () {
+    submitWordBtn.onclick = () => {
       const word = wordInput.value.trim();
-      if (word === "") {
-        alert("Lütfen bir kelime girin!");
-        return;
-      }
-      const wordsRef = database.ref("words");
-      wordsRef.orderByChild("word").equalTo(word).once("value", function(snapshot) {
-        let duplicate = false;
-        snapshot.forEach(function(child) {
-          if (child.val().user === currentUser) {
-            duplicate = true;
-          }
-        });
-        if (duplicate) {
-          alert("Bu kelimeyi zaten eklediniz!");
-        } else {
-          meaningContainer.classList.remove("hidden");
-        }
+      if (!word) return alert("Kelime girin");
+      database.ref("words").orderByChild("word").equalTo(word).once("value", snapshot => {
+        let exists = false;
+        snapshot.forEach(child => { if (child.val().user === currentUser) exists = true; });
+        if (exists) alert("Bu kelimeyi zaten eklediniz!");
+        else meaningContainer.classList.remove("hidden");
       });
-    });
+    };
 
-    saveWordBtn.addEventListener("click", function () {
+    saveWordBtn.onclick = () => {
       const word = wordInput.value.trim();
       const meaning = meaningInput.value.trim();
-      if (word === "" || meaning === "") {
-        alert("Lütfen kelime ve anlamını girin!");
-        return;
-      }
-      const newWord = {
-        word,
-        meaning,
-        user: currentUser,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-      };
+      if (!word || !meaning) return alert("Kelime ve anlam girin");
+      const newWord = { word, meaning, user: currentUser, timestamp: firebase.database.ServerValue.TIMESTAMP };
       database.ref("words").push(newWord);
       wordInput.value = "";
       meaningInput.value = "";
       meaningContainer.classList.add("hidden");
-    });
+    };
 
-    userFilter.addEventListener("change", function () {
+    userFilter.onchange = () => {
       loadWords();
-    });
+      if (userFilter.value === "me") searchSection.classList.remove("hidden");
+      else searchSection.classList.add("hidden");
+    };
+
+    searchBtn.onclick = () => {
+      const term = searchInput.value.trim().toLowerCase();
+      if (!term) return;
+      database.ref("words").orderByChild("user").equalTo(currentUser).once("value", snapshot => {
+        let found = false;
+        snapshot.forEach(child => {
+          if (child.val().word.toLowerCase() === term) found = true;
+        });
+        if (found) searchResult.textContent = `"${term}" zaten eklenmiş.`;
+        else {
+          searchResult.innerHTML = `"${term}" bulunamadı. Anlamını girin:`;
+          wordInput.value = term;
+          meaningContainer.classList.remove("hidden");
+        }
+      });
+    };
 
     function checkSavedUser() {
-      const savedUser = localStorage.getItem("currentUser");
-      if (savedUser) {
-        currentUser = savedUser;
+      const saved = localStorage.getItem("currentUser");
+      if (saved) {
+        currentUser = saved;
         userSection.classList.add("hidden");
         wordInputSection.classList.remove("hidden");
         loadUsers();
@@ -261,30 +249,20 @@ button.delete-btn i {
     }
 
     function loadUsers() {
-      database.ref("users").once("value").then((snapshot) => {
+      database.ref("users").once("value").then(snapshot => {
         const users = snapshot.val() || {};
-        if (!users[currentUser]) {
-          database.ref("users/" + currentUser).set(true);
-        }
+        if (!users[currentUser]) database.ref("users/" + currentUser).set(true);
         updateUserFilter(Object.keys(users));
       });
     }
 
     function updateUserFilter(users) {
-      userFilter.innerHTML = '';
-      const allOption = document.createElement("option");
-      allOption.value = "all";
-      allOption.textContent = "Tüm Kullanıcılar";
-      userFilter.appendChild(allOption);
-      const meOption = document.createElement("option");
-      meOption.value = "me";
-      meOption.textContent = "Sadece Benim Kelimelerim";
-      userFilter.appendChild(meOption);
+      userFilter.innerHTML = '<option value="all">Tüm Kullanıcılar</option><option value="me">Sadece Benim Kelimelerim</option>';
       users.forEach(user => {
-        const option = document.createElement("option");
-        option.value = user;
-        option.textContent = user;
-        userFilter.appendChild(option);
+        const opt = document.createElement("option");
+        opt.value = user;
+        opt.textContent = user;
+        userFilter.appendChild(opt);
       });
       loadWords();
     }
@@ -292,65 +270,47 @@ button.delete-btn i {
     function loadWords() {
       loadingElement.style.display = "block";
       wordList.innerHTML = '<h2>Kelime Listesi</h2>';
-      wordList.appendChild(loadingElement);
-
-      database.ref("words").orderByChild("timestamp").on("value", function(snapshot) {
+      database.ref("words").orderByChild("timestamp").once("value", snapshot => {
         const words = [];
-        snapshot.forEach(function(child) {
+        snapshot.forEach(child => {
           const word = child.val();
           word.id = child.key;
           words.push(word);
         });
-
-        const selectedUser = userFilter.value;
-        const filteredWords = selectedUser === "all"
-          ? words
-          : selectedUser === "me"
-            ? words.filter(word => word.user === currentUser)
-            : words.filter(word => word.user === selectedUser);
-
-        filteredWords.sort((a, b) => a.word.localeCompare(b.word));
-
-        displayWords(filteredWords);
+        const selected = userFilter.value;
+        const filtered = selected === "all" ? words :
+                         selected === "me" ? words.filter(w => w.user === currentUser) :
+                         words.filter(w => w.user === selected);
+        filtered.sort((a, b) => a.word.localeCompare(b.word));
+        displayWords(filtered);
       });
     }
 
     function displayWords(words) {
       wordList.innerHTML = '<h2>Kelime Listesi</h2>';
-      if (words.length === 0) {
-        wordList.innerHTML += '<p>Henüz kelime eklenmedi.</p>';
-        return;
-      }
+      if (!words.length) return wordList.innerHTML += '<p>Henüz kelime yok.</p>';
       words.forEach(word => {
-        const wordItem = document.createElement("div");
-        wordItem.className = "word-item";
-
-        const wordText = document.createElement("div");
-        wordText.className = "word-text";
-        wordText.innerHTML = `<strong>${word.word}</strong>: ${word.meaning} <span class="user-badge">${word.user}</span>`;
-
-        const deleteBtn = document.createElement("button");
-        deleteBtn.className = "delete-btn";
-        deleteBtn.textContent = "Sil";
-        deleteBtn.onclick = function () {
-          if (word.user === currentUser) {
-            deleteWord(word.id);
-          } else {
-            alert("Sadece kendi kelimelerinizi silebilirsiniz!");
-          }
-        };
-
-        wordItem.appendChild(wordText);
+        const item = document.createElement("div");
+        item.className = "word-item";
+        const text = document.createElement("div");
+        text.className = "word-text";
+        text.innerHTML = `<strong>${word.word}</strong>: ${word.meaning} <span class="user-badge">${word.user}</span>`;
+        item.appendChild(text);
         if (word.user === currentUser) {
-          wordItem.appendChild(deleteBtn);
+          const btn = document.createElement("button");
+          btn.className = "delete-btn";
+          btn.innerHTML = '<i class="fas fa-trash"></i>';
+          btn.onclick = () => deleteWord(word.id);
+          item.appendChild(btn);
         }
-        wordList.appendChild(wordItem);
+        wordList.appendChild(item);
       });
     }
 
-    function deleteWord(wordId) {
-      if (confirm("Bu kelimeyi silmek istediğinize emin misiniz?")) {
-        database.ref("words/" + wordId).remove();
+    function deleteWord(id) {
+      if (confirm("Bu kelime silinsin mi?")) {
+        database.ref("words/" + id).remove();
+        loadWords();
       }
     }
   </script>
