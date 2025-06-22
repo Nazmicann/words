@@ -242,14 +242,17 @@
       });
     };
 
-    function checkSavedUser() {
-      const saved = localStorage.getItem("currentUser");
-      if (saved) {
-        currentUser = saved;
-        userSection.classList.add("hidden");
-        wordInputSection.classList.remove("hidden");
-        loadUsers();
-      }
+          function checkSavedUser() {
+                  const saved = localStorage.getItem("currentUser");
+                    if (saved) {
+                          currentUser = saved;
+                            userSection.classList.add("hidden");
+                            wordInputSection.classList.remove("hidden");
+                              userFilter.value = "me"; // Kullanıcı ilk kendi kelimelerini görsün
+                                      loadUsers();
+                        }
+                }
+
     }
 
     function loadUsers() {
