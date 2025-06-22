@@ -253,8 +253,6 @@
                         }
                 }
 
-    }
-
     function loadUsers() {
       database.ref("users").once("value").then(snapshot => {
         const users = snapshot.val() || {};
