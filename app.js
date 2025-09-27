@@ -19,6 +19,7 @@ const meaningInput = document.getElementById("meaning-input");
 const saveBtn = document.getElementById("save-word");
 const wordList = document.getElementById("word-list");
 const userFilter = document.getElementById("user-filter");
+const sortFilter = document.getElementById("sort-filter");
 const loading = document.getElementById("loading");
 const meaningContainer = document.getElementById("meaning-container");
 const wordInputSection = document.getElementById("word-input-section");
@@ -89,8 +90,11 @@ userFilter.onchange = () => {
   loadWords();
   if (userFilter.value === "me") searchSection.classList.remove("hidden");
   else searchSection.classList.add("hidden");
+            
 };
-
+sortFilter.onchange = () => {
+  loadWords();
+};
 searchBtn.onclick = () => {
   const term = searchInput.value.trim().toLowerCase();
   if (!term) return;
@@ -138,12 +142,38 @@ function loadWords() {
       word.id = child.key;
       words.push(word);
     });
-    const selected = userFilter.value;
-    const filtered = selected === "all" ? words :
-      selected === "me" ? words.filter(w => w.user === currentUser) :
-      words.filter(w => w.user === selected);
-    filtered.sort((a, b) => a.word.localeCompare(b.word));
+
+    const selectedUser = userFilter.value;
+    const filtered = selectedUser === "all" ? words :
+      selectedUser === "me" ? words.filter(w => w.user === currentUser) :
+      words.filter(w => w.user === selectedUser);
+
+    // --- SIRALAMA MANTIĞI BURADA GÜNCELLENDİ ---
+    const sortOrder = sortFilter.value; // Sıralama seçeneğini al
+    
+    switch (sortOrder) {
+      case "alphabetical-za":
+        // Alfabetik ters sıralama (Z-A)
+        filtered.sort((a, b) => b.word.localeCompare(a.word));
+        break;
+      case "newest":
+        // Tarihe göre en yeni (timestamp büyük olan daha yenidir)
+        filtered.sort((a, b) => b.timestamp - a.timestamp);
+        break;
+      case "oldest":
+        // Tarihe göre en eski (timestamp küçük olan daha eskidir)
+        filtered.sort((a, b) => a.timestamp - b.timestamp);
+        break;
+      default:
+        // Varsayılan: Alfabetik sıralama (A-Z)
+        filtered.sort((a, b) => a.word.localeCompare(b.word));
+        break;
+    }
+    // --- GÜNCELLEME SONU ---
+
     displayWords(filtered);
+    // Loading gizlenmeli, bunu displayWords'e taşıyabilir veya burada bırakabiliriz.
+    loading.style.display = "none"; 
   });
 }
 
@@ -181,6 +211,7 @@ function deleteWord(id) {
 function showModal(content) {
   alert(content);
 }
+
 
 
 
