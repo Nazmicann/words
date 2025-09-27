@@ -117,16 +117,7 @@ function loadUsers() {
   });
 }
 
-function updateUserFilter(users) {
-  userFilter.innerHTML = '<option value="all">Tüm Kullanıcılar</option><option value="me">Sadece Benim Kelimelerim</option>';
-  users.forEach(user => {
-    const opt = document.createElement("option");
-    opt.value = user;
-    opt.textContent = user;
-    userFilter.appendChild(opt);
-  });
-  loadWords();
-}
+
 
 function loadWords() {
   loading.style.display = "block";
@@ -181,3 +172,4 @@ function deleteWord(id) {
 function showModal(content) {
   alert(content);
 }
+
