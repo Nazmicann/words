@@ -117,7 +117,7 @@ function loadUsers() {
   });
 }
 function updateUserFilter(users) {
-  userFilter.innerHTML = '<option value="all">Tüm Kullanıcılar</option><option value="me">Sadece Benim Kelimelerim</option>';
+  userFilter.innerHTML = '<option value="all">Tüm Kullanıcılar</option>';
   users.forEach(user => {
     const opt = document.createElement("option");
     opt.value = user;
@@ -181,5 +181,6 @@ function deleteWord(id) {
 function showModal(content) {
   alert(content);
 }
+
 
 
