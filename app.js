@@ -8,6 +8,20 @@ const firebaseConfig = {
             messagingSenderId: "469414272332",
             appId: "1:469414272332:web:4441813c6188a41a20c3e9"
 };
+document.getElementById('send-reset-button').addEventListener('click', () => {
+    const userEmail = document.getElementById('user-email-input').value;
+    
+    // Firebase fonksiyonunu çağırıyoruz
+    firebase.auth().sendPasswordResetEmail(userEmail)
+        .then(() => {
+            alert(userEmail + " adresine parola belirleme e-postası başarıyla gönderildi. Kullanıcı, gelen e-posta ile şifresini belirleyerek sisteme giriş yapabilecektir.");
+        })
+        .catch((error) => {
+            console.error("Hata:", error);
+            alert("Hata: Parola sıfırlama e-postası gönderilemedi. Hata Kodu: " + error.code);
+        });
+});
+// ... Diğer app.js kodlarınız ...
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
@@ -211,6 +225,7 @@ function deleteWord(id) {
 function showModal(content) {
   alert(content);
 }
+
 
 
 
