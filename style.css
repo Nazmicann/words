@@ -242,4 +242,89 @@ button.delete-btn:hover {
     button.delete-btn {
         margin-left: 0;
     }
+
+    
+/* --- YENİ PROFİL KARTI STİLLERİ --- */
+
+.profile-card {
+    background: linear-gradient(135deg, #3498db, #2980b9); /* Mavi gradient */
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    color: white;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 10px;
+}
+
+.profile-header i {
+    font-size: 2.5em;
+    margin-right: 15px;
+    color: #f1c40f; /* Sarı simge */
+}
+
+#profile-username {
+    margin: 0;
+    font-size: 1.6em;
+    font-weight: 700;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.stats-grid {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    gap: 10px;
+}
+
+.stat-item {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 10px;
+    border-radius: 8px;
+    flex: 1;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.8em;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+/* ÖDÜL MESAJI STİLİ */
+.achievement-message {
+    background-color: #f39c12; /* Turuncu/Sarı Vurgu */
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 1.1em;
+    font-weight: 600;
+    animation: pulse 1.5s infinite; /* Göz alıcı animasyon */
+}
+
+.achievement-message i {
+    margin-right: 8px;
+    color: #ffd700; /* Altın rengi */
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
 }
