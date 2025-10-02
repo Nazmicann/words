@@ -1,319 +1,205 @@
 /* Genel yapı */
-
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #f5f5f5;
-    }
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-    .container {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    .input-group {
-      margin-bottom: 15px;
-    }
-    input, textarea, button, select {
-      width: 100%;
-      padding: 10px;
-      margin: 5px 0;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    button.delete-btn {
-      background-color: #f44336;
-      width: 36px;
-      height: 36px;
-      padding: 0;
-      font-size: 16px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-left: 8px;
-    }
-    #user-section, #word-input-section, #meaning-container {
-      margin-bottom: 20px;
-    }
-    #word-list {
-      margin-top: 20px;
-    }
-    .word-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f9f9f9;
-      padding: 10px 15px;
-      margin-bottom: 8px;
-      border-radius: 5px;
-      border-left: 4px solid #4CAF50;
-    }
-    .word-text {
-      flex: 1;
-    }
-    .word-text strong {
-      color: #4CAF50;
-    }
-    .user-badge {
-      display: inline-block;
-      background: #2196F3;
-      color: white;
-      padding: 3px 8px;
-      border-radius: 15px;
-      font-size: 12px;
-      margin-left: 5px;
-    }
-    .hidden {
-      display: none;
-    }
-    .loading {
-      text-align: center;
-      color: #666;
-      font-style: italic;
-    }
-    #search-section {
-      margin-top: 10px;
-    }
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-    }
-    .modal-content {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 90%;
-      max-height: 90%;
-      overflow-y: auto;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-      position: relative;
-    }
-    #modal-close {
-      position: absolute;
-      top: 8px;
-      right: 12px;
-      font-size: 24px;
-      cursor: pointer;
-    }
-    @media (max-width: 600px) {
-      body {
-        padding: 10px;
-      }
-      .word-item {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      input, textarea, button, select {
-        font-size: 14px;
-      }
-      button.delete-btn {
-        width: 36px;
-        height: 36px;
-      }
-    }
 body {
-  font-family: Arial, sans-serif;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #f5f5f5;
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f5f5;
 }
-
-
 h1 {
-  text-align: center;
-  color: #333;
+    text-align: center;
+    color: #333;
 }
-
 .container {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 /* Giriş grupları */
 .input-group {
-  margin-bottom: 15px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+    margin-bottom: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
-
+.input-group > * {
+    flex-grow: 1; 
+    flex-basis: 0;
+    min-width: 150px; 
+}
 .input-group button {
-  width: auto;
+    width: auto;
+    flex-grow: 0;
+    flex-basis: auto;
+}
+#word-input {
+    flex-grow: 2; 
 }
 
 /* Form alanları */
 input, textarea, button, select {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 16px;
-  transition: all 0.2s ease;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: all 0.2s ease;
 }
 
 input:focus, textarea:focus, select:focus {
-  border-color: #4CAF50;
-  outline: none;
-  box-shadow: 0 0 4px rgba(76, 175, 80, 0.4);
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 4px rgba(76, 175, 80, 0.4);
 }
 
-/* Placeholder simgesi için */
-input[type="text"]::placeholder {
-  padding-left: 24px;
-}
-
+/* Kullanıcı Adı Inputu */
 input#username-input {
-  background: url('https://cdn-icons-png.flaticon.com/512/1077/1077114.png') no-repeat 10px center;
-  background-size: 16px;
-  padding-left: 36px;
+    background: url('https://cdn-icons-png.flaticon.com/512/1077/1077114.png') no-repeat 10px center;
+    background-size: 16px;
+    padding-left: 36px;
 }
 
 /* Butonlar */
 button {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: all 0.2s ease;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
 }
-
 button:hover {
-  background-color: #45a049;
-  transform: scale(1.02);
+    background-color: #45a049;
+    transform: scale(1.01);
 }
 
 /* Sil butonu */
 button.delete-btn {
-  background-color: #f44336;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  font-size: 16px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    background-color: #f44336;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    flex-shrink: 0; /* Küçülmesini engelle */
 }
 
-/* Alanlar */
-#user-section, #word-input-section, #meaning-container {
-  margin-bottom: 20px;
+/* Alanlar ve Bölümler */
+#user-section, #word-input-section {
+    margin-bottom: 20px;
 }
 
-#word-list {
-  margin-top: 20px;
+#meaning-container {
+    display: flex;
+    flex-direction: column;
+}
+#meaning-container textarea {
+    min-height: 80px;
+}
+#meaning-container button {
+    width: 100%;
 }
 
 /* Kelime kartları */
 .word-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f9f9f9;
-  padding: 10px 15px;
-  margin-bottom: 8px;
-  border-radius: 5px;
-  border-left: 4px solid #4CAF50;
-  border-bottom: 1px solid #e0e0e0;
-  transition: all 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f9f9f9;
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    border-radius: 5px;
+    border-left: 4px solid #4CAF50;
+    border-bottom: 1px solid #e0e0e0;
+    transition: all 0.2s ease;
 }
-
 .word-item:hover {
-  background-color: #eefef0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    background-color: #eefef0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
-
 .word-text {
-  flex: 1;
+    flex: 1;
+    display: flex; 
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
 }
-
+.word-info {
+    flex: 1;
+}
 .word-text strong {
-  color: #4CAF50;
+    color: #4CAF50;
+    margin-right: 5px;
 }
 
 /* Kullanıcı etiketi */
 .user-badge {
-  display: inline-block;
-  background: linear-gradient(to right, #2196F3, #03A9F4);
-  color: white;
-  padding: 4px 10px;
-  border-radius: 15px;
-  font-size: 12px;
-  font-weight: bold;
-  margin-left: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    display: inline-block;
+    background: linear-gradient(to right, #2196F3, #03A9F4);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Arama ve yükleme */
 .hidden {
-  display: none;
+    display: none !important; 
 }
-
 .loading {
-  text-align: center;
-  color: #666;
-  font-style: italic;
+    text-align: center;
+    color: #666;
+    font-style: italic;
 }
-
 #search-section {
-  margin-top: 10px;
+    display: flex; 
+    gap: 10px;
+    margin-top: 10px;
+}
+#search-section input {
+    flex-grow: 1;
+}
+#search-section button {
+    width: auto;
+    flex-grow: 0;
+    flex-basis: auto;
+}
+#search-result {
+    margin-top: 5px;
+    color: #d8500c;
+    width: 100%; /* Sonuç mesajının tam genişlikte olması için */
 }
 
 /* Mobil uyumluluk */
 @media (max-width: 600px) {
-  body {
-    padding: 10px;
-  }
-
-  .input-group {
-    flex-direction: column;
-  }
-
-  .input-group button {
-    width: 100%;
-    margin-bottom: 8px;
-  }
-
-  input, textarea, select, button {
-    font-size: 15px;
-  }
-
-  .word-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+    body {
+        padding: 10px;
+    }
+    .input-group {
+        flex-direction: column;
+    }
+    .input-group > * {
+        width: 100%;
+        min-width: 100%;
+        flex-basis: auto;
+    }
+    .word-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .word-text {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
 }
-
-
-
