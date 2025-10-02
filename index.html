@@ -1,69 +1,64 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>İngilizce Kelime Ezberleme</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
- 
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>İngilizce Kelime Ezberleme</title>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-  
+    
 <body>
-  <div class="container">
-    <h1>İngilizce Kelime Ezberleme</h1>
-    <div id="user-section">
-      <div class="input-group">
-        <input type="text" id="username-input" placeholder="Kullanıcı Adı">
-        <button id="login-btn">Giriş Yap / Kayıt Ol</button>
-      </div>
+    <div class="container">
+        <h1>İngilizce Kelime Ezberleme</h1>
+        
+        <div id="user-section">
+            <div class="input-group">
+                <input type="text" id="username-input" placeholder="Kullanıcı Adı">
+                <button id="login-btn">Giriş Yap / Kayıt Ol</button>
+            </div>
+        </div>
+        
+        <div id="word-input-section" class="hidden">
+            <div class="input-group">
+                <input type="text" id="word-input" placeholder="Kelime Gir">
+                <button id="submit-word">Gönder</button>
+            </div>
+            
+            <div id="meaning-container" class="hidden">
+                <textarea id="meaning-input" placeholder="Anlamını Yaz"></textarea>
+                <button id="save-word">Kaydet</button>
+            </div>
+            
+            <div class="input-group">
+                <select id="user-filter"></select>
+                <select id="sort-filter">
+                    <option value="alphabetical-az">Alfabetik (A-Z)</option>
+                    <option value="alphabetical-za">Alfabetik (Z-A)</option>
+                    <option value="newest">Tarihe Göre (En Yeni)</option>
+                    <option value="oldest">Tarihe Göre (En Eski)</option>
+                </select>
+            </div>
+            
+            <div id="search-section" class="hidden">
+                <input type="text" id="search-input" placeholder="Kelime Ara">
+                <button id="search-btn">Ara</button>
+                <div id="search-result"></div>
+            </div>
+        </div>
+        
+        <div id="word-list">
+            <h2>Kelime Listesi</h2>
+            <div id="loading" class="loading hidden">Yükleniyor...</div>
+        </div>
+        
     </div>
- 
 
-<script src="app.js"></script>
-    <div id="word-input-section" class="hidden">
-      <div class="input-group">
-        <input type="text" id="word-input" placeholder="Kelime Gir">
-        <button id="submit-word">Gönder</button>
-      </div>
-      <div id="meaning-container" class="hidden">
-        <textarea id="meaning-input" placeholder="Anlamını Yaz"></textarea>
-        <button id="save-word">Kaydet</button>
-      </div>
-      <div class="input-group">
-        <select id="user-filter"></select>
-        <select id="sort-filter">
-            <option value="alphabetical-az">Alfabetik (A-Z)</option>
-            <option value="alphabetical-za">Alfabetik (Z-A)</option>
-            <option value="newest">Tarihe Göre (En Yeni)</option>
-            <option value="oldest">Tarihe Göre (En Eski)</option>
-            </select>
-      </div>
-      
-      <div id="search-section" class="hidden">
-        <input type="text" id="search-input" placeholder="Kelime Ara">
-        <button id="search-btn">Ara</button>
-        <div id="search-result"></div>
-      </div>
-      
-    </div>
-    <div id="word-list">
-      <h2>Kelime Listesi</h2>
-      <div id="loading" class="loading">Yükleniyor...</div>
-    </div>
-  </div>
-
-
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  <script src="app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <script src="app.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
