@@ -11,41 +11,7 @@ const firebaseConfig = {
 document.getElementById('send-reset-button').addEventListener('click', () => {
     const userEmail = document.getElementById('user-email-input').value;
     
-// firebase.auth().onAuthStateChanged dinleyicinizin içinde olmalı
-firebase.auth().onAuthStateChanged((user) => {
-    const adminPanel = document.getElementById('admin-panel');
-    
-    if (user) {
-        // Kullanıcı oturum açtı. Şimdi rolünü kontrol edelim.
 
-        // NOT: Hangi veritabanını kullandığınıza göre bu satırı değiştirin.
-        // Firestore için örnek:
-        firebase.firestore().collection("users").doc(user.uid).get()
-            .then((doc) => {
-                if (doc.exists) {
-                    const userData = doc.data();
-                    if (userData.role === 'admin') {
-                        // Rol yönetici: Paneli görünür yap
-                        adminPanel.style.display = 'block'; // Varsayılanı CSS'te 'none' yapın!
-                    } else {
-                        // Rol yönetici değil: Paneli gizle
-                        adminPanel.style.display = 'none';
-                    }
-                } else {
-                    // Kullanıcı veritabanında yok (yeni kullanıcı olabilir)
-                    adminPanel.style.display = 'none';
-                }
-            })
-            .catch((error) => {
-                console.error("Kullanıcı rolü okunurken hata oluştu:", error);
-                adminPanel.style.display = 'none'; // Hata durumunda da gizle
-            });
-
-    } else {
-        // Kullanıcı oturum açmamış: Paneli kesinlikle gizle
-        adminPanel.style.display = 'none';
-    }
-});
 // ... Diğer app.js kodlarınız ...
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
@@ -250,6 +216,7 @@ function deleteWord(id) {
 function showModal(content) {
   alert(content);
 }
+
 
 
 
