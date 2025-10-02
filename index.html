@@ -26,7 +26,27 @@
                 <button id="login-btn">Giriş Yap</button>
             </div>
         </div>
-        
+        <div id="profile-card" class="profile-card hidden">
+    <div class="profile-header">
+        <i class="fas fa-user-circle"></i>
+        <h3 id="profile-username">Kullanıcı Adı Yükleniyor...</h3>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-item">
+            <span class="stat-value" id="total-words">0</span>
+            <span class="stat-label">Toplam Kelime</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="last-added">--</span>
+            <span class="stat-label">Son Kelime Tarihi</span>
+        </div>
+    </div>
+    
+    <div id="achievement-message" class="achievement-message hidden">
+        <i class="fas fa-trophy"></i> 
+        <span id="trophy-text"></span>
+    </div>
+</div>
         <div id="word-input-section" class="hidden">
             <div class="input-group">
                 <input type="text" id="word-input" placeholder="Yeni Kelime Girin">
