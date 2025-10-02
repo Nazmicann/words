@@ -1,4 +1,4 @@
-// Firebase başlat
+
 const firebaseConfig = {
             apiKey: "AIzaSyAlQR7p6gwbYlRmIVTVXDjvhi79Ms_vcvM",
             authDomain: "words-2a5f2.firebaseapp.com",
@@ -12,6 +12,15 @@ const firebaseConfig = {
 // FIREBASE CONFIGURATION
 // *** DİKKAT: firebaseConfig'i kendi anahtarlarınızla değiştirmelisiniz! ***
 // =======================================================
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
 
 // Firebase Başlatma
 firebase.initializeApp(firebaseConfig);
@@ -41,10 +50,18 @@ const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const searchResult = document.getElementById("search-result");
 
+// YENİ PROFİL KARTI DOM'LARI
+const profileCard = document.getElementById("profile-card");
+const profileUsername = document.getElementById("profile-username");
+const totalWordsEl = document.getElementById("total-words");
+const lastAddedEl = document.getElementById("last-added");
+const achievementMessage = document.getElementById("achievement-message");
+const trophyText = document.getElementById("trophy-text");
+
 let currentUser = null;
 
 // =======================================================
-// GİRİŞ MANTIĞI
+// GİRİŞ MANTIĞI VE OTURUM KONTROLÜ
 // =======================================================
 
 function handleLogin(username) {
@@ -54,9 +71,15 @@ function handleLogin(username) {
     currentUser = cleanUsername;
     localStorage.setItem("currentUser", currentUser);
     
+    // Google ile giriş yapan kullanıcının UID'sini kaydet (Realtime DB Kuralı için)
+    const uid = auth.currentUser.uid;
+    database.ref("google_uids/" + uid).set(true); 
+
     // UI Güncelleme
     userSection.classList.add("hidden");
     wordInputSection.classList.remove("hidden");
+    profileCard.classList.remove("hidden"); 
+    profileUsername.textContent = username; 
     userFilter.value = "me";
     
     loadUsers();
@@ -67,7 +90,6 @@ googleLoginBtn.onclick = () => {
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider)
         .then((result) => {
-            // Google'daki görünen adı kullan (boşsa e-postanın ilk kısmını kullan)
             const googleUsername = result.user.displayName || result.user.email.split('@')[0];
             handleLogin(googleUsername);
         })
@@ -77,23 +99,22 @@ googleLoginBtn.onclick = () => {
         });
 };
 
-// Oturum Durumu Kontrolü (Sayfa yüklendiğinde veya yenilendiğinde)
+// Oturum Durumu Kontrolü (Sayfa yüklendiğinde)
 auth.onAuthStateChanged(user => {
     if (user) {
-        // Oturum açıksa, kullanıcıyı otomatik olarak giriş yapmış kabul et
         const googleUsername = user.displayName || user.email.split('@')[0];
         handleLogin(googleUsername);
     } else {
-        // Oturum kapalıysa, localStorage'daki veriyi temizle ve giriş ekranını göster
         localStorage.removeItem("currentUser");
         userSection.classList.remove("hidden");
         wordInputSection.classList.add("hidden");
+        profileCard.classList.add("hidden");
     }
 });
 
 
 // =======================================================
-// UYGULAMA MANTIĞI
+// KELİME EKLEME VE İŞLEME
 // =======================================================
 
 // Kelime Gönder (Anlam giriş alanını göster)
@@ -127,19 +148,26 @@ saveBtn.onclick = () => {
         word, meaning, user: currentUser,
         timestamp: firebase.database.ServerValue.TIMESTAMP
     };
-    database.ref("words").push(newWord);
     
-    wordInput.value = "";
-    meaningInput.value = "";
-    meaningContainer.classList.add("hidden");
-    searchResult.textContent = ""; 
-    loadWords();
+    // Veritabanına kaydet
+    database.ref("words").push(newWord)
+        .then(() => {
+            // Kayıt başarılı olduktan sonra ödül kontrolü yap ve listeyi yenile
+            wordInput.value = "";
+            meaningInput.value = "";
+            meaningContainer.classList.add("hidden");
+            searchResult.textContent = ""; 
+            loadWords(); // Yeni istatistikleri ve listeyi yükle
+        });
 };
 
-// Filtre ve Sıralama İşleyicileri
+
+// =======================================================
+// FİLTRELEME VE ARAMA
+// =======================================================
+
 userFilter.onchange = () => {
     loadWords();
-    // Sadece "me" (benimkiler) seçiliyse arama bölümünü göster
     if (userFilter.value === "me") searchSection.classList.remove("hidden");
     else searchSection.classList.add("hidden");
 };
@@ -148,12 +176,10 @@ sortFilter.onchange = () => {
     loadWords();
 };
 
-// Arama İşlemi
 searchBtn.onclick = () => {
     const term = searchInput.value.trim().toLowerCase();
     if (!term) return;
 
-    // Sadece mevcut kullanıcının kelimeleri arasında arama yap
     database.ref("words").orderByChild("user").equalTo(currentUser).once("value", snapshot => {
         let found = false;
         snapshot.forEach(child => {
@@ -174,11 +200,14 @@ searchBtn.onclick = () => {
     });
 };
 
+// =======================================================
+// VERİ YÖNETİMİ
+// =======================================================
+
 // Kullanıcıları Yükle (Filtre için)
 function loadUsers() {
     database.ref("users").once("value").then(snapshot => {
         const users = snapshot.val() || {};
-        // Yeni kullanıcıyı users listesine ekle
         if (!users[currentUser]) database.ref("users/" + currentUser).set(true);
         updateUserFilter(Object.keys(users));
     });
@@ -206,7 +235,7 @@ function updateUserFilter(users) {
     loadWords();
 }
 
-// Kelimeleri Yükle ve Filtrele/Sırala
+// Kelimeleri Yükle, Filtrele, Sırala VE İstatistikleri Hesapla
 function loadWords() {
     loading.classList.remove("hidden"); 
     wordList.innerHTML = '<h2><i class="fas fa-list-alt"></i> Kelime Listesi</h2><div id="loading" class="loading">Yükleniyor...</div>';
@@ -218,6 +247,9 @@ function loadWords() {
             word.id = child.key;
             words.push(word);
         });
+
+        // İstatistik Hesaplama (Tüm kelimelerden)
+        calculateAndDisplayStats(words);
 
         const selectedUser = userFilter.value;
         
@@ -274,7 +306,6 @@ function displayWords(words) {
         
         text.appendChild(wordInfo);
 
-        // Silme butonu sadece kendi kelimelerimiz için
         if (word.user === currentUser) {
             const btn = document.createElement("button");
             btn.className = "delete-btn";
@@ -300,3 +331,76 @@ function deleteWord(id) {
 function showModal(content) {
     alert(content);
 }
+
+// =======================================================
+// İSTATİSTİK VE OYUNLAŞTIRMA MANTIĞI
+// =======================================================
+
+// İstatistikleri Hesaplama ve Kartı Güncelleme
+function calculateAndDisplayStats(allWords) {
+    // Sadece mevcut kullanıcının kelimeleri
+    const userWords = allWords.filter(w => w.user === currentUser);
+    const totalCount = userWords.length;
+
+    // 1. İstatistikleri Güncelle
+    totalWordsEl.textContent = totalCount;
+
+    // 2. Son Kelime Tarihini Hesapla
+    if (userWords.length > 0) {
+        userWords.sort((a, b) => b.timestamp - a.timestamp);
+        const lastTimestamp = userWords[0].timestamp;
+        const date = new Date(lastTimestamp);
+        lastAddedEl.textContent = date.toLocaleDateString("tr-TR");
+    } else {
+        lastAddedEl.textContent = "--";
+    }
+
+    // 3. Ödül Kontrolü
+    checkAchievement(totalCount);
+}
+
+// Ödül Kontrolü ve Mesajı Gösterme
+function checkAchievement(totalCount) {
+    achievementMessage.classList.add("hidden"); 
+
+    if (totalCount === 0) {
+        trophyText.textContent = `Hadi ilk kelimeni ekle!`;
+        achievementMessage.classList.remove("hidden");
+        return;
+    }
+
+    // Her 10 kelimede bir ödül
+    const trophyThreshold = 10;
+    const currentTrophy = Math.floor(totalCount / trophyThreshold) * trophyThreshold;
+    
+    if (totalCount > 0 && totalCount % trophyThreshold === 0) {
+        // Ödül kazanıldı! (Sadece tam 10, 20, 30... olduğunda göster)
+        trophyText.textContent = `TEBRİKLER! ${currentTrophy} kelime eşiğini aştın! 💪`;
+        achievementMessage.classList.remove("hidden");
+        achievementMessage.style.animation = 'pulse 1.5s infinite';
+        
+        // Mesajı 5 saniye sonra gizle
+        setTimeout(() => {
+            achievementMessage.classList.add("hidden");
+            achievementMessage.style.animation = 'none';
+        }, 5000);
+        
+    } else {
+        // Bir sonraki ödüle ne kadar kaldığını göster
+        const nextTrophy = currentTrophy + trophyThreshold;
+        const remaining = nextTrophy - totalCount;
+        trophyText.textContent = `Bir sonraki ${nextTrophy} kelimeye ${remaining} kaldı!`;
+        achievementMessage.classList.remove("hidden");
+        achievementMessage.style.animation = 'none';
+    }
+}
+
+// Eski (Gizli) Giriş Butonunun İşleyicisi
+loginBtn.onclick = () => {
+    // Bu buton artık HTML'de gizlidir, sadece yedek olarak durur.
+    const username = usernameInput.value.trim();
+    if (!username) return showModal("Lütfen kullanıcı adı girin.");
+    // Bu yolla giriş yapanlar Realtime DB kurallarına takılabilir.
+    currentUser = username.replace(/[.#$[\]]/g, "");
+    loadUsers();
+};
