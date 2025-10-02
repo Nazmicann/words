@@ -8,11 +8,7 @@ const firebaseConfig = {
             messagingSenderId: "469414272332",
             appId: "1:469414272332:web:4441813c6188a41a20c3e9"
 };
-document.getElementById('send-reset-button').addEventListener('click', () => {
-    const userEmail = document.getElementById('user-email-input').value;
-    
 
-// ... Diğer app.js kodlarınız ...
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
@@ -216,6 +212,7 @@ function deleteWord(id) {
 function showModal(content) {
   alert(content);
 }
+
 
 
 
