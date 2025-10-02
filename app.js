@@ -8,10 +8,11 @@ const firebaseConfig = {
             messagingSenderId: "469414272332",
             appId: "1:469414272332:web:4441813c6188a41a20c3e9"
 };
-
+// Firebase Başlatma
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
+// DOM Elementleri
 const usernameInput = document.getElementById("username-input");
 const loginBtn = document.getElementById("login-btn");
 const wordInput = document.getElementById("word-input");
@@ -29,12 +30,10 @@ const searchSection = document.getElementById("search-section");
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const searchResult = document.getElementById("search-result");
-const modal = document.getElementById("modal");
-const modalBody = document.getElementById("modal-body");
-const modalClose = document.getElementById("modal-close");
 
 let currentUser = null;
 
+// Sayfa Yüklendiğinde
 document.addEventListener("DOMContentLoaded", () => {
   const saved = localStorage.getItem("currentUser");
   if (saved) {
@@ -46,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// Giriş Yap Butonu
 loginBtn.onclick = () => {
   const username = usernameInput.value.trim();
   if (!username) return showModal("Lütfen kullanıcı adı girin.");
@@ -59,12 +59,14 @@ loginBtn.onclick = () => {
   loadUsers();
 };
 
+// Kelime Gönder Butonu
 submitBtn.onclick = () => {
   const word = wordInput.value.trim();
   if (!word) return showModal("Kelime girin.");
   database.ref("words").orderByChild("word").equalTo(word).once("value", snapshot => {
     let exists = false;
     snapshot.forEach(child => {
+      // Kelimeyi mevcut kullanıcının ekleyip eklemediğini kontrol et
       if (child.val().user === currentUser) exists = true;
     });
     if (exists) showModal("Bu kelime zaten eklenmiş.");
@@ -72,6 +74,7 @@ submitBtn.onclick = () => {
   });
 };
 
+// Anlamı Kaydet Butonu
 saveBtn.onclick = () => {
   const word = wordInput.value.trim();
   const meaning = meaningInput.value.trim();
@@ -84,59 +87,89 @@ saveBtn.onclick = () => {
   wordInput.value = "";
   meaningInput.value = "";
   meaningContainer.classList.add("hidden");
+  searchResult.textContent = ""; // Arama sonucunu temizle
   loadWords();
 };
 
+// Kullanıcı Filtresi Değiştiğinde
 userFilter.onchange = () => {
   loadWords();
+  // Sadece "me" seçiliyse arama bölümünü göster
   if (userFilter.value === "me") searchSection.classList.remove("hidden");
   else searchSection.classList.add("hidden");
-            
 };
+
+// Sıralama Filtresi Değiştiğinde
 sortFilter.onchange = () => {
   loadWords();
 };
+
+// Arama Butonu
 searchBtn.onclick = () => {
   const term = searchInput.value.trim().toLowerCase();
   if (!term) return;
+
+  // Sadece mevcut kullanıcının kelimeleri arasında arama yap
   database.ref("words").orderByChild("user").equalTo(currentUser).once("value", snapshot => {
     let found = false;
     snapshot.forEach(child => {
       if (child.val().word.toLowerCase() === term) found = true;
     });
+
     if (found) {
       searchResult.textContent = `"${term}" zaten eklenmiş.`;
+      meaningContainer.classList.add("hidden");
+      wordInput.value = "";
+      meaningInput.value = "";
     } else {
       searchResult.innerHTML = `"${term}" bulunamadı. Anlamını girin:`;
       wordInput.value = term;
+      meaningInput.value = ""; 
       meaningContainer.classList.remove("hidden");
     }
   });
 };
 
+// Kullanıcıları Yükle
 function loadUsers() {
   database.ref("users").once("value").then(snapshot => {
     const users = snapshot.val() || {};
+    // Yeni kullanıcıyı listeye ekle
     if (!users[currentUser]) database.ref("users/" + currentUser).set(true);
     updateUserFilter(Object.keys(users));
   });
 }
+
+// Kullanıcı Filtresi Seçeneklerini Güncelle
 function updateUserFilter(users) {
   userFilter.innerHTML = '<option value="all">Tüm Kullanıcılar</option>';
+  
+  // "Sadece Benimkiler" seçeneğini her zaman ekle
+  const meOpt = document.createElement("option");
+  meOpt.value = "me";
+  meOpt.textContent = "Sadece Benimkiler";
+  userFilter.appendChild(meOpt);
+  
+  // Diğer kullanıcıları ekle
   users.forEach(user => {
-    const opt = document.createElement("option");
-    opt.value = user;
-    opt.textContent = user;
-    userFilter.appendChild(opt);
+    if (user !== currentUser) {
+      const opt = document.createElement("option");
+      opt.value = user;
+      opt.textContent = user;
+      userFilter.appendChild(opt);
+    }
   });
+  
+  // Filtreyi başlangıçta "me" olarak ayarla
+  userFilter.value = currentUser ? "me" : "all";
   loadWords();
 }
 
-
+// Kelimeleri Yükle
 function loadWords() {
-  loading.style.display = "block";
-  wordList.innerHTML = '<h2>Kelime Listesi</h2>';
-  database.ref("words").orderByChild("timestamp").once("value", snapshot => {
+  loading.classList.remove("hidden"); 
+
+  database.ref("words").once("value", snapshot => {
     const words = [];
     snapshot.forEach(child => {
       const word = child.val();
@@ -145,41 +178,39 @@ function loadWords() {
     });
 
     const selectedUser = userFilter.value;
+    
+    // 1. Filtreleme
     const filtered = selectedUser === "all" ? words :
       selectedUser === "me" ? words.filter(w => w.user === currentUser) :
       words.filter(w => w.user === selectedUser);
 
-    // --- SIRALAMA MANTIĞI BURADA GÜNCELLENDİ ---
-    const sortOrder = sortFilter.value; // Sıralama seçeneğini al
-    
+    // 2. Sıralama
+    const sortOrder = sortFilter.value; 
+      
     switch (sortOrder) {
       case "alphabetical-za":
-        // Alfabetik ters sıralama (Z-A)
         filtered.sort((a, b) => b.word.localeCompare(a.word));
         break;
       case "newest":
-        // Tarihe göre en yeni (timestamp büyük olan daha yenidir)
         filtered.sort((a, b) => b.timestamp - a.timestamp);
         break;
       case "oldest":
-        // Tarihe göre en eski (timestamp küçük olan daha eskidir)
         filtered.sort((a, b) => a.timestamp - b.timestamp);
         break;
-      default:
-        // Varsayılan: Alfabetik sıralama (A-Z)
+      default: // alphabetical-az
         filtered.sort((a, b) => a.word.localeCompare(b.word));
         break;
     }
-    // --- GÜNCELLEME SONU ---
 
     displayWords(filtered);
-    // Loading gizlenmeli, bunu displayWords'e taşıyabilir veya burada bırakabiliriz.
-    loading.style.display = "none"; 
+    loading.classList.add("hidden"); 
   });
 }
 
+// Kelimeleri Ekrana Yazdır
 function displayWords(words) {
   wordList.innerHTML = '<h2>Kelime Listesi</h2>';
+
   if (!words.length) {
     wordList.innerHTML += "<p>Henüz kelime yok.</p>";
     return;
@@ -187,9 +218,17 @@ function displayWords(words) {
   words.forEach(word => {
     const item = document.createElement("div");
     item.className = "word-item";
+    
     const text = document.createElement("div");
     text.className = "word-text";
-    text.innerHTML = `<strong>${word.word}</strong>: ${word.meaning} <span class="user-badge">${word.user}</span>`;
+    
+    const wordInfo = document.createElement("span");
+    wordInfo.className = "word-info";
+    wordInfo.innerHTML = `<strong>${word.word}</strong>: ${word.meaning} <span class="user-badge">${word.user}</span>`;
+    
+    text.appendChild(wordInfo);
+
+    // Silme butonu sadece kendi kelimelerimiz için
     if (word.user === currentUser) {
       const btn = document.createElement("button");
       btn.className = "delete-btn";
@@ -197,11 +236,13 @@ function displayWords(words) {
       btn.onclick = () => deleteWord(word.id);
       text.appendChild(btn);
     }
+    
     item.appendChild(text);
     wordList.appendChild(item);
   });
 }
 
+// Kelime Silme
 function deleteWord(id) {
   if (confirm("Bu kelime silinsin mi?")) {
     database.ref("words/" + id).remove();
@@ -209,15 +250,8 @@ function deleteWord(id) {
   }
 }
 
+// Basit Hata/Bilgi Mesajı
 function showModal(content) {
+  // HTML'de modal tanımlı olsa da JS'de sadece alert kullanılıyor.
   alert(content);
 }
-
-
-
-
-
-
-
-
-
