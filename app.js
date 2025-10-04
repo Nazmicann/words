@@ -50,18 +50,21 @@ let currentUser = null;
 // GİRİŞ MANTIĞI VE OTURUM KONTROLÜ
 // =======================================================
 
+// app.js dosyanızdaki handleLogin fonksiyonu
 function handleLogin(username) {
-    // Firebase key'leri için geçersiz karakterleri temizle
     const cleanUsername = username.replace(/[.#$[\]]/g, "");
-    
-    currentUser = cleanUsername;
+    currentUser = cleanUsername; 
     localStorage.setItem("currentUser", currentUser);
     
-    // Google ile giriş yapan kullanıcının UID'sini kaydet (Realtime DB Kuralı için)
     const uid = auth.currentUser.uid;
+    
+    // 1. Google Bayrağını UID ile kaydet (Veritabanındaki ana yetki kaynağımız)
     database.ref("google_uids/" + uid).set(true); 
+    
+    // 2. Kullanıcı Adını sadece kaydet (Çakışmayı önlemek için burada UID kullanmıyoruz)
+    database.ref("users/" + currentUser).set(true); 
 
-    // UI Güncelleme
+    // UI Güncelleme (Geri kalanı aynı kalacak)
     userSection.classList.add("hidden");
     wordInputSection.classList.remove("hidden");
     profileCard.classList.remove("hidden"); 
@@ -390,3 +393,4 @@ loginBtn.onclick = () => {
     currentUser = username.replace(/[.#$[\]]/g, "");
     loadUsers();
 };
+
