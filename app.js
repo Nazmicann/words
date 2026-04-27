@@ -132,24 +132,30 @@ async function checkAndLoadDailyWords() {
 function renderDailyCards(words) {
     const container = document.getElementById("daily-cards-container");
     if (!container) return;
-
-    container.innerHTML = ""; // İçini temizle
+    container.innerHTML = "";
 
     words.forEach(word => {
+        // Eğer word nesnesi direkt gelmiyorsa veya içinde 'word' yoksa undefined basar.
+        // Güvenli okuma yapalım:
+        const wordText = word.word || "Kelime Yok";
+        const meaningText = word.meaning || "Anlam Yok";
+        const wordId = word.id || Math.random().toString(36).substr(2, 9);
+
         const card = document.createElement("div");
         card.className = "flashcard";
         card.innerHTML = `
             <div class="flashcard-inner">
-                <div class="front">
-                    <p><strong>${word.word}</strong></p>
-                    <small>Tıkla ve öğren</small>
-                </div>
+                <div class="front"><strong>${wordText}</strong></div>
                 <div class="back">
-                    <p>${word.meaning}</p>
-                    <button class="learned-btn" onclick="markAsLearned('${word.id}', this)">Ezberledim!</button>
+                    <p>${meaningText}</p>
+                    <button class="primary-btn learned-btn" onclick="markAsLearned('${wordId}')">Ezberledim!</button>
                 </div>
             </div>
         `;
+        card.onclick = (e) => { if(e.target.tagName !== 'BUTTON') card.classList.toggle("flipped"); };
+        container.appendChild(card);
+    });
+}
         
         // Kartın dönme efekti
         card.addEventListener('click', function(e) {
@@ -362,6 +368,25 @@ function displayWords(words) {
         wordList.appendChild(item);
     });
 }
+async function updateLearningStats() {
+    const userId = auth.currentUser.uid;
+    
+    // 1. Öğrenilen kelimeleri çek
+    const learnedSnapshot = await database.ref(`users/${userId}/learnedWords`).once('value');
+    const learnedCount = learnedSnapshot.val() ? Object.keys(learnedSnapshot.val()).length : 0;
+
+    // 2. Havuzdaki toplam kelime sayısını çek
+    const poolSnapshot = await database.ref("wordPool").once('value');
+    const totalPoolCount = poolSnapshot.val() ? Object.keys(poolSnapshot.val()).length : 0;
+
+    // 3. HTML'deki stat alanlarını güncelle (ID'leri index.html'e göre ayarla)
+    document.getElementById("total-words").textContent = learnedCount; // Öğrenilen kelime sayısı
+    document.getElementById("progress-text").textContent = `Öğrenme Durumu: ${learnedCount} / ${totalPoolCount}`;
+    
+    const progressPercent = totalPoolCount > 0 ? (learnedCount / totalPoolCount) * 100 : 0;
+    document.getElementById("progress-bar").style.width = progressPercent + "%";
+}
+
 
 // Kelime Silme
 function deleteWord(id) {
@@ -495,11 +520,13 @@ function renderDailyCards(words) {
 // Ezberledim İşareti
 async function markAsLearned(wordId) {
     const userId = auth.currentUser.uid;
-    // Learned listesine ekle
+    // Firebase'e kaydet
     await database.ref(`users/${userId}/learnedWords/${wordId}`).set(true);
-    alert("Harika! Bu kelime bir daha karşına çıkmayacak.");
-    // Listeyi yenile
-    setupDailyWords();
+    
+    // UI'ı anında güncelle
+    alert("Kelime öğrenilenlere eklendi!");
+    updateLearningStats(); // İstatistikleri yenile
+    setupDailyWords();     // Yeni kartları getir (isteğe bağlı)
 }
 // Örnek toplu yükleme fonksiyonu
 function uploadPool() {
