@@ -112,22 +112,19 @@ async function checkAndLoadDailyWords() {
     const userId = auth.currentUser.uid;
     const today = new Date().toLocaleDateString();
 
-    // 1. Firebase'den kullanıcının bugünkü kelimelerini çekmeyi dene
     const dailySnapshot = await database.ref(`users/${userId}/dailyWords`).once('value');
     const dailyData = dailySnapshot.val();
 
-    // 2. Eğer bugün için zaten kelime seçilmişse, direkt onları ekrana bas
-    if (dailyData && dailyData.date === today) {
-        console.log("Bugünün kelimeleri zaten seçilmiş, getiriliyor...");
+    // Veri var mı, tarihi bugüne mi ait ve içinde kelimeler var mı?
+    if (dailyData && dailyData.date === today && dailyData.words && Object.keys(dailyData.words).length > 0) {
+        console.log("Bugünün kelimeleri yükleniyor...");
         renderDailyCards(dailyData.words);
     } else {
-        // 3. Bugün için veri yoksa (veya eski tarihliyse) yeni 5 tane seç
-        console.log("Bugün için yeni kelimeler seçiliyor...");
-        setupDailyWords(); // Bu fonksiyon yeni 5 kelime seçip kaydedecek
+        console.log("Yeni kelimeler seçiliyor...");
+        setupDailyWords(); // Veri yoksa veya boşsa yeni seç
     }
     
-    // Bölümü görünür yap
-    document.getElementById("daily-learning-section").classList.remove("hidden");
+    document.getElementById("daily-learning-section")?.classList.remove("hidden");
 }
 
 function renderDailyCards(words) {
@@ -463,31 +460,38 @@ function checkAchievement(totalCount) {
 // Seçim Algoritması: Günlük 5 Kelime Belirle
 async function setupDailyWords() {
     const userId = auth.currentUser.uid;
-    
-    // 1. Kullanıcının daha önce öğrendiği kelimeleri al
-    const learnedSnapshot = await database.ref(`users/${userId}/learnedWords`).once('value');
-    const learnedList = learnedSnapshot.val() ? Object.keys(learnedSnapshot.val()) : [];
+    const today = new Date().toLocaleDateString();
 
-    // 2. Tüm kelime havuzunu al
+    // Havuzdan (wordPool) tüm kelimeleri çek
     const poolSnapshot = await database.ref("wordPool").once('value');
-    const allWords = [];
-    poolSnapshot.forEach(child => {
-        if (!learnedList.includes(child.key)) {
-            allWords.push({ id: child.key, ...child.val() });
-        }
+    const poolData = poolSnapshot.val();
+
+    if (!poolData) {
+        console.error("Kelime havuzu (wordPool) boş!");
+        return;
+    }
+
+    // Havuzdaki verileri diziye çevir
+    const poolEntries = Object.entries(poolData); // [[word, meaning], ...]
+    
+    // Rastgele 5 kelime seç
+    const shuffled = poolEntries.sort(() => 0.5 - Math.random());
+    const selectedEntries = shuffled.slice(0, 5);
+    
+    // Seçilenleri nesne formatına geri getir
+    const dailyWords = {};
+    selectedEntries.forEach(([key, val]) => {
+        dailyWords[key] = val;
     });
 
-    // 3. Karıştır ve 5 tane seç (Aynı kelime gelme olasılığı böylece sıfırlanır)
-    const shuffled = allWords.sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, 5);
-
-    // 4. Firebase'e o günün kelimeleri olarak kaydet
-    const dailyData = {
-        date: new Date().toLocaleDateString(),
-        words: selected
+    const newDailyData = {
+        date: today,
+        words: dailyWords
     };
-    await database.ref(`users/${userId}/dailyWords`).set(dailyData);
-    renderDailyCards(selected);
+
+    // Firebase'e kaydet ve ekrana bas
+    await database.ref(`users/${userId}/dailyWords`).set(newDailyData);
+    renderDailyCards(dailyWords);
 }
 
 // Kartları Ekrana Bas
@@ -496,20 +500,14 @@ function renderDailyCards(words) {
     if (!container) return;
     
     container.innerHTML = "";
-    console.log("Ekrana basılacak ham veri:", words); // F12 Konsolunda burayı kontrol et
+    console.log("Ekrana basılacak verinin son hali:", words);
 
-    if (!words || !Array.isArray(words)) {
-        container.innerHTML = "<p>Kelimeler yüklenemedi.</p>";
+    if (!words || Object.keys(words).length === 0) {
+        container.innerHTML = "<p>Öğrenilecek yeni kelime kalmadı!</p>";
         return;
     }
 
-    words.forEach(item => {
-        // Firebase'den gelen veri yapısına göre en güvenli okuma:
-        // Eğer 'word' yoksa 'item'ın kendisine bak, o da yoksa varsayılan metin yaz.
-        const wordText = item.word || (typeof item === 'string' ? item : "Belirsiz Kelime");
-        const meaningText = item.meaning || "Anlam eklenmemiş";
-        const wordId = item.id || Math.random().toString(36).substr(2, 9);
-
+    Object.entries(words).forEach(([wordText, meaningText]) => {
         const card = document.createElement("div");
         card.className = "flashcard";
         card.innerHTML = `
@@ -517,7 +515,7 @@ function renderDailyCards(words) {
                 <div class="front"><strong>${wordText}</strong></div>
                 <div class="back">
                     <p>${meaningText}</p>
-                    <button class="primary-btn learned-btn" onclick="markAsLearned('${wordId}')">Ezberledim!</button>
+                    <button class="primary-btn learned-btn" onclick="markAsLearned('${wordText}')">Ezberledim!</button>
                 </div>
             </div>
         `;
@@ -531,7 +529,6 @@ function renderDailyCards(words) {
         container.appendChild(card);
     });
 }
-
 // Ezberledim İşareti
 async function markAsLearned(wordId) {
     const userId = auth.currentUser.uid;
