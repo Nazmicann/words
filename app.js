@@ -93,6 +93,7 @@ auth.onAuthStateChanged(user => {
     if (user) {
         const googleUsername = user.displayName || user.email.split('@')[0];
         handleLogin(googleUsername);
+        setupDailyWords();
     } else {
         localStorage.removeItem("currentUser");
         userSection.classList.remove("hidden");
