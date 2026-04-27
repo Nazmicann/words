@@ -493,23 +493,41 @@ async function setupDailyWords() {
 // Kartları Ekrana Bas
 function renderDailyCards(words) {
     const container = document.getElementById("daily-cards-container");
+    if (!container) return;
+    
     container.innerHTML = "";
+    console.log("Ekrana basılacak ham veri:", words); // F12 Konsolunda burayı kontrol et
 
-    words.forEach(word => {
+    if (!words || !Array.isArray(words)) {
+        container.innerHTML = "<p>Kelimeler yüklenemedi.</p>";
+        return;
+    }
+
+    words.forEach(item => {
+        // Firebase'den gelen veri yapısına göre en güvenli okuma:
+        // Eğer 'word' yoksa 'item'ın kendisine bak, o da yoksa varsayılan metin yaz.
+        const wordText = item.word || (typeof item === 'string' ? item : "Belirsiz Kelime");
+        const meaningText = item.meaning || "Anlam eklenmemiş";
+        const wordId = item.id || Math.random().toString(36).substr(2, 9);
+
         const card = document.createElement("div");
         card.className = "flashcard";
         card.innerHTML = `
             <div class="flashcard-inner">
-                <div class="front"><strong>${word.word}</strong></div>
+                <div class="front"><strong>${wordText}</strong></div>
                 <div class="back">
-                    <p>${word.meaning}</p>
-                    <button class="learned-btn" onclick="markAsLearned('${word.id}')">Ezberledim!</button>
+                    <p>${meaningText}</p>
+                    <button class="primary-btn learned-btn" onclick="markAsLearned('${wordId}')">Ezberledim!</button>
                 </div>
             </div>
         `;
-        card.onclick = (e) => {
-            if(e.target.tagName !== 'BUTTON') card.classList.toggle("flipped");
-        };
+
+        card.addEventListener('click', function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                this.classList.toggle('flipped');
+            }
+        });
+
         container.appendChild(card);
     });
 }
