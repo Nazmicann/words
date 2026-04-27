@@ -455,7 +455,22 @@ function uploadPool() {
     ];
     words.forEach(w => database.ref("wordPool").push(w));
 }
+function topluKelimeYukle() {
+    const havuz = [
+        { word: "Resilient", meaning: "Dayanıklı, çabuk iyileşen" },
+        { word: "Versatile", meaning: "Çok yönlü" },
+        { word: "Eloquent", meaning: "Güzel konuşan, hitabeti güçlü" },
+        { word: "Candid", meaning: "Samimi, içten" },
+        { word: "Meticulous", meaning: "Titiz, dikkatli" }
+    ];
 
+    havuz.forEach(kelime => {
+        database.ref("wordPool").push(kelime);
+    });
+    console.log("Kelimeler başarıyla wordPool'a eklendi!");
+}
+
+// Tarayıcı konsoluna (F12) 'topluKelimeYukle()' yazarak çalıştırabilirsin.
 // Eski (Gizli) Giriş Butonunun İşleyicisi
 loginBtn.onclick = () => {
     // Bu buton artık HTML'de gizlidir, sadece yedek olarak durur.
