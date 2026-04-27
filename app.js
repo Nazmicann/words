@@ -132,11 +132,11 @@ async function checkAndLoadDailyWords() {
 function renderDailyCards(words) {
     const container = document.getElementById("daily-cards-container");
     if (!container) return;
-    container.innerHTML = "";
+    
+    container.innerHTML = ""; // İçeriği temizle
 
     words.forEach(word => {
-        // Eğer word nesnesi direkt gelmiyorsa veya içinde 'word' yoksa undefined basar.
-        // Güvenli okuma yapalım:
+        // Güvenli veri okuma
         const wordText = word.word || "Kelime Yok";
         const meaningText = word.meaning || "Anlam Yok";
         const wordId = word.id || Math.random().toString(36).substr(2, 9);
@@ -152,18 +152,14 @@ function renderDailyCards(words) {
                 </div>
             </div>
         `;
-        card.onclick = (e) => { if(e.target.tagName !== 'BUTTON') card.classList.toggle("flipped"); };
-        container.appendChild(card);
-    });
-}
-        
-        // Kartın dönme efekti
+
+        // Kartın dönme efekti (Fonksiyon içinde olmalı)
         card.addEventListener('click', function(e) {
             if (e.target.tagName !== 'BUTTON') {
                 this.classList.toggle('flipped');
             }
         });
-        
+
         container.appendChild(card);
     });
 }
