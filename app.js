@@ -129,6 +129,7 @@ async function checkAndLoadDailyWords() {
     // Bölümü görünür yap
     document.getElementById("daily-learning-section").classList.remove("hidden");
 }
+
 function renderDailyCards(words) {
     const container = document.getElementById("daily-cards-container");
     if (!container) return;
@@ -162,7 +163,7 @@ function renderDailyCards(words) {
 
         container.appendChild(card);
     });
-}
+          }
 // Kelime Gönder (Anlam giriş alanını göster)
 submitBtn.onclick = () => {
     const word = wordInput.value.trim();
