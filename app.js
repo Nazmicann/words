@@ -93,7 +93,9 @@ auth.onAuthStateChanged(user => {
     if (user) {
         const googleUsername = user.displayName || user.email.split('@')[0];
         handleLogin(googleUsername);
+        checkAndLoadDailyWords(); // Kelimeleri kontrol et ve yükle        
         setupDailyWords();
+                
     } else {
         localStorage.removeItem("currentUser");
         userSection.classList.remove("hidden");
@@ -106,7 +108,59 @@ auth.onAuthStateChanged(user => {
 // =======================================================
 // KELİME EKLEME VE İŞLEME
 // =======================================================
+async function checkAndLoadDailyWords() {
+    const userId = auth.currentUser.uid;
+    const today = new Date().toLocaleDateString();
 
+    // 1. Firebase'den kullanıcının bugünkü kelimelerini çekmeyi dene
+    const dailySnapshot = await database.ref(`users/${userId}/dailyWords`).once('value');
+    const dailyData = dailySnapshot.val();
+
+    // 2. Eğer bugün için zaten kelime seçilmişse, direkt onları ekrana bas
+    if (dailyData && dailyData.date === today) {
+        console.log("Bugünün kelimeleri zaten seçilmiş, getiriliyor...");
+        renderDailyCards(dailyData.words);
+    } else {
+        // 3. Bugün için veri yoksa (veya eski tarihliyse) yeni 5 tane seç
+        console.log("Bugün için yeni kelimeler seçiliyor...");
+        setupDailyWords(); // Bu fonksiyon yeni 5 kelime seçip kaydedecek
+    }
+    
+    // Bölümü görünür yap
+    document.getElementById("daily-learning-section").classList.remove("hidden");
+}
+function renderDailyCards(words) {
+    const container = document.getElementById("daily-cards-container");
+    if (!container) return;
+
+    container.innerHTML = ""; // İçini temizle
+
+    words.forEach(word => {
+        const card = document.createElement("div");
+        card.className = "flashcard";
+        card.innerHTML = `
+            <div class="flashcard-inner">
+                <div class="front">
+                    <p><strong>${word.word}</strong></p>
+                    <small>Tıkla ve öğren</small>
+                </div>
+                <div class="back">
+                    <p>${word.meaning}</p>
+                    <button class="learned-btn" onclick="markAsLearned('${word.id}', this)">Ezberledim!</button>
+                </div>
+            </div>
+        `;
+        
+        // Kartın dönme efekti
+        card.addEventListener('click', function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                this.classList.toggle('flipped');
+            }
+        });
+        
+        container.appendChild(card);
+    });
+}
 // Kelime Gönder (Anlam giriş alanını göster)
 submitBtn.onclick = () => {
     const word = wordInput.value.trim();
