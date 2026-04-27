@@ -383,6 +383,69 @@ function checkAchievement(totalCount) {
         achievementMessage.style.animation = 'none';
     }
 }
+// Seçim Algoritması: Günlük 5 Kelime Belirle
+async function setupDailyWords() {
+    const userId = auth.currentUser.uid;
+    
+    // 1. Kullanıcının daha önce öğrendiği kelimeleri al
+    const learnedSnapshot = await database.ref(`users/${userId}/learnedWords`).once('value');
+    const learnedList = learnedSnapshot.val() ? Object.keys(learnedSnapshot.val()) : [];
+
+    // 2. Tüm kelime havuzunu al
+    const poolSnapshot = await database.ref("wordPool").once('value');
+    const allWords = [];
+    poolSnapshot.forEach(child => {
+        if (!learnedList.includes(child.key)) {
+            allWords.push({ id: child.key, ...child.val() });
+        }
+    });
+
+    // 3. Karıştır ve 5 tane seç (Aynı kelime gelme olasılığı böylece sıfırlanır)
+    const shuffled = allWords.sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, 5);
+
+    // 4. Firebase'e o günün kelimeleri olarak kaydet
+    const dailyData = {
+        date: new Date().toLocaleDateString(),
+        words: selected
+    };
+    await database.ref(`users/${userId}/dailyWords`).set(dailyData);
+    renderDailyCards(selected);
+}
+
+// Kartları Ekrana Bas
+function renderDailyCards(words) {
+    const container = document.getElementById("daily-cards-container");
+    container.innerHTML = "";
+
+    words.forEach(word => {
+        const card = document.createElement("div");
+        card.className = "flashcard";
+        card.innerHTML = `
+            <div class="flashcard-inner">
+                <div class="front"><strong>${word.word}</strong></div>
+                <div class="back">
+                    <p>${word.meaning}</p>
+                    <button class="learned-btn" onclick="markAsLearned('${word.id}')">Ezberledim!</button>
+                </div>
+            </div>
+        `;
+        card.onclick = (e) => {
+            if(e.target.tagName !== 'BUTTON') card.classList.toggle("flipped");
+        };
+        container.appendChild(card);
+    });
+}
+
+// Ezberledim İşareti
+async function markAsLearned(wordId) {
+    const userId = auth.currentUser.uid;
+    // Learned listesine ekle
+    await database.ref(`users/${userId}/learnedWords/${wordId}`).set(true);
+    alert("Harika! Bu kelime bir daha karşına çıkmayacak.");
+    // Listeyi yenile
+    setupDailyWords();
+}
 
 // Eski (Gizli) Giriş Butonunun İşleyicisi
 loginBtn.onclick = () => {
