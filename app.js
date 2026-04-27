@@ -446,6 +446,15 @@ async function markAsLearned(wordId) {
     // Listeyi yenile
     setupDailyWords();
 }
+// Örnek toplu yükleme fonksiyonu
+function uploadPool() {
+    const words = [
+        { word: "Persistent", meaning: "Israrcı" },
+        { word: "Ambiguous", meaning: "Belirsiz" },
+        // ... listeyi uzat
+    ];
+    words.forEach(w => database.ref("wordPool").push(w));
+}
 
 // Eski (Gizli) Giriş Butonunun İşleyicisi
 loginBtn.onclick = () => {
