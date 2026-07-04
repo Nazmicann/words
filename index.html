@@ -21,7 +21,7 @@
             overflow: hidden;
         }
         
-        /* Tarayıcının ses engellemesini aşmak için ilk giriş ekranı */
+        /* Giriş ekranı tasarımı */
         #giris-ekrani {
             position: fixed;
             top: 0;
@@ -51,10 +51,10 @@
             background-color: #ff6b81;
         }
 
-        /* Ana İçerik Konteyneri */
+        /* Ana İçerik Alanı */
         .container {
             text-align: center;
-            display: none; /* İlk başta gizli, tıklanınca açılacak */
+            display: none; 
             flex-direction: column;
             align-items: center;
             gap: 30px;
@@ -85,7 +85,7 @@
 
     <div class="container" id="saka-alani">
         <video id="saka-video" loop>
-            <video src="https://i.imgyukle.com/2026/07/04/SCPXEG.mp4" controls poster="https://i.imgyukle.com/2026/07/04/SCPXEG.fr.jpeg"></video>
+           <video src="https://i.imgyukle.com/2026/07/04/SCPXEG.mp4" controls poster="https://i.imgyukle.com/2026/07/04/SCPXEG.fr.jpeg"></video>
             Tarayıcınız video oynatmayı desteklemiyor.
         </video>
         
@@ -93,13 +93,11 @@
     </div>
 
     <script>
-        // Arkadaşına sırayla görünecek cümleler:
+        // Cümleleri buradan değiştirebilirsin:
         const cumleler = [
-            "Sistem hacklendi... ☠️",
-            "Şaka şaka, ama arkana baksan iyi olur 👀",
-            "Bu videoyu izlerken yüzünün alacağı hali merak ediyorum 😂",
-            "Bilgisayarın 5 saniye içinde kendini imha edecek... 💣",
-            "Tamam tamam, panik yapma! Sadece ufak bir şaka 😉"
+            "KOCA ARIYORUM ",
+            "YANİ KOCAM VAR MI?",
+            "BENİ SİKEN YOK MU"
         ];
 
         let index = 0;
@@ -118,19 +116,15 @@
             }, 400);
         }
 
-        // Arkadaşın butona bastığında çalışacak fonksiyon
         function sakaBaslat() {
-            // Giriş butonunu gizle, video alanını göster
             girisEkrani.style.display = 'none';
             sakaAlani.style.display = 'flex';
             
-            // Videoyu sesli olarak başlat
             video.muted = false;
-            video.play().catch(e => console.log("Video başlatılamadı:", e));
+            video.play().catch(e => console.log("Video oynatılamadı:", e));
 
-            // Yazı döngüsünü çalıştır
             yaziDegistir();
-            setInterval(yaziDegistir, 3000); // 3 saniyede bir yazı değişir
+            setInterval(yaziDegistir, 2000); // 2 saniyede bir yazı değişir
         }
     </script>
 
