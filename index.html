@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sürpriz! 😉</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #0d0d0d;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+        
+        /* Tarayıcının ses engellemesini aşmak için ilk giriş ekranı */
+        #giris-ekrani {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0d0d0d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .btn-basla {
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #ff4757;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 71, 87, 0.4);
+            transition: all 0.2s ease;
+        }
+        .btn-basla:hover {
+            transform: scale(1.05);
+            background-color: #ff6b81;
+        }
+
+        /* Ana İçerik Konteyneri */
+        .container {
+            text-align: center;
+            display: none; /* İlk başta gizli, tıklanınca açılacak */
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            max-width: 90%;
+        }
+        video {
+            max-width: 100%;
+            max-height: 60vh;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+        }
+        #saka-yazi {
+            font-size: 1.8rem;
+            font-weight: 600;
+            min-height: 2.5rem;
+            color: #ff4757;
+            transition: opacity 0.4s ease-in-out;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="giris-ekrani">
+        <button class="btn-basla" onclick="sakaBaslat()">İçeriği Görüntüle 🔓</button>
+    </div>
+
+    <div class="container" id="saka-alani">
+        <video id="saka-video" loop>
+            <video src="https://i.imgyukle.com/2026/07/04/SCPXEG.mp4" controls poster="https://i.imgyukle.com/2026/07/04/SCPXEG.fr.jpeg"></video>
+            Tarayıcınız video oynatmayı desteklemiyor.
+        </video>
+        
+        <p id="saka-yazi">Yükleniyor...</p>
+    </div>
+
+    <script>
+        // Arkadaşına sırayla görünecek cümleler:
+        const cumleler = [
+            "Sistem hacklendi... ☠️",
+            "Şaka şaka, ama arkana baksan iyi olur 👀",
+            "Bu videoyu izlerken yüzünün alacağı hali merak ediyorum 😂",
+            "Bilgisayarın 5 saniye içinde kendini imha edecek... 💣",
+            "Tamam tamam, panik yapma! Sadece ufak bir şaka 😉"
+        ];
+
+        let index = 0;
+        const yaziElementi = document.getElementById('saka-yazi');
+        const girisEkrani = document.getElementById('giris-ekrani');
+        const sakaAlani = document.getElementById('saka-alani');
+        const video = document.getElementById('saka-video');
+
+        function yaziDegistir() {
+            yaziElementi.style.opacity = 0;
+            
+            setTimeout(() => {
+                yaziElementi.textContent = cumleler[index];
+                yaziElementi.style.opacity = 1;
+                index = (index + 1) % cumleler.length;
+            }, 400);
+        }
+
+        // Arkadaşın butona bastığında çalışacak fonksiyon
+        function sakaBaslat() {
+            // Giriş butonunu gizle, video alanını göster
+            girisEkrani.style.display = 'none';
+            sakaAlani.style.display = 'flex';
+            
+            // Videoyu sesli olarak başlat
+            video.muted = false;
+            video.play().catch(e => console.log("Video başlatılamadı:", e));
+
+            // Yazı döngüsünü çalıştır
+            yaziDegistir();
+            setInterval(yaziDegistir, 3000); // 3 saniyede bir yazı değişir
+        }
+    </script>
+
+</body>
+</html>
